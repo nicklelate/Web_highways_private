@@ -2,37 +2,80 @@
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.App-header_app {
+  background-color: #1589CE;
+  min-height: 10vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  font-size: 4vh;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: bold;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.App-container {
+  position: 'relative';
+  height: 15vh;
+  width: 50vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 3.2vh;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.App-right_top {
+  position: absolute; /* 📌 1. เอาเครื่องหมาย '' ออก */       
+  left: 50vw;           /* 📌 3. เพิ่มคำสั่งนี้เพื่อดึงกล่องไปชิดขอบขวาสุด */
+  height: 45vh;
+  width: 50vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 3.2vh;
+}
+
+/* กล่องสีขาวที่ใส่ช่องค้นหา */
+.search-box-wrapper {
+  background-color: white;
+  padding: 2vh;
+  display: flex;
+  gap: 0.8vw;
+}
+
+/* ช่องกรอกข้อความ Input */
+.search-input {
+  padding: 0.2vw;
+  font-size: 2.1vh;
+  border-radius: 0.3vw;
+  border: 1px solid #ddd;
+  outline: none;
+  width: 12vw; /* กำหนดความกว้างสักหน่อย */
+}
+
+.search-input:focus {
+  border-color: #007bff; /* เปลี่ยนสีขอบเมื่อคลิกพิมพ์ */
+}
+
+/* ปุ่มกด Search */
+.search-button {
+  padding: 1vh 1vw;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 0.3vw;
+  cursor: pointer;
+  font-size: 2.1vh;
+  transition: background-color 0.2s; /* ให้สีค่อยๆ เปลี่ยนตอนเอาเมาส์ชี้ */
+}
+
+.search-button:hover {
+  background-color: #0056b3; /* สีเข้มขึ้นตอนเอาเมาส์ชี้ */
 }
