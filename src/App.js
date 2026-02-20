@@ -32,7 +32,7 @@ function App() {
       <div className="App-header_app">
         DEPARTMENT OF HIGHWAYS
       </div>
-      <SriHeatmap />
+      {/* <SriHeatmap /> */}
 
       {showRedLine && (
               <div className="App-right_top">
