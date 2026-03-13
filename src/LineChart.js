@@ -23,14 +23,27 @@ ChartJS.register(
   Legend
 );
 
-const LineChart = () => {
+// รับค่า selectedTime ที่ส่งมาจาก App.js 
+const LineChart = ({ selectedTime }) => {
+
+  console.log("เวลาที่เลือกจาก Dropdown :", `"${selectedTime}"`);
+  console.log("ข้อมูลที่หาได้จาก JSON :", chartDataJson[selectedTime]);
+
+  // ดึงข้อมูลตามช่วงเวลาที่เลือก 
+  // (ถ้ายังไม่เลือกเวลา หรือหาไม่เจอ ให้คืนค่า Array ว่างๆ ไว้ก่อน กราฟจะได้ไม่พัง)
+  const currentData = chartDataJson[selectedTime] || { 
+    labels: [], 
+    avg_speeds: [], 
+    Q15_speeds: [], 
+    Q85_speeds: [] 
+  };
 
 const data = {
-    labels: chartDataJson.labels, // เรียกใช้ข้อมูลระยะทางจาก JSON
+    labels: currentData.labels, // เรียกใช้ข้อมูลระยะทางจาก JSON
     datasets: [
       {
         label: 'Average Speed',
-        data: chartDataJson.avg_speeds, // เรียกใช้ข้อมูลความเร็วจาก JSON
+        data: currentData.avg_speeds, // เรียกใช้ข้อมูลความเร็วจาก JSON
         borderColor: 'rgb(0, 0, 255)',
         borderWidth: 2, // ปรับเส้นให้บางลงเพราะข้อมูลเยอะมาก
         tension: 0.1,
@@ -38,14 +51,14 @@ const data = {
       },
       {
         label: 'Speed: 15 Percentile', 
-        data: chartDataJson.Q15_speeds, 
+        data: currentData.Q15_speeds, 
         borderColor: 'rgba(255, 130, 130)', // สีแดง
         borderWidth: 2, 
         tension: 0.1,
       },
 {
         label: 'Speed: 85 Percentile', 
-        data: chartDataJson.Q85_speeds, 
+        data: currentData.Q85_speeds, 
         borderColor: 'rgb(130, 255, 130)', // สีเขียว
         borderWidth: 2, 
         tension: 0.1,
@@ -94,7 +107,7 @@ const data = {
         type: 'linear', // เพิ่มบรรทัดนี้: บอกว่าแกน X เป็นตัวเลขต่อเนื่อง
         title: {
           display: true,
-          text: 'Distance (km)',
+          text: 'ระยะทาง (km)',
           color: 'rgb(0, 0, 0)'
         },
         ticks: {
@@ -107,9 +120,9 @@ const data = {
             const numericDistance = Number(currentDistance); 
             
             if (numericDistance % 5 === 0) {
-              return numericDistance + ' กม.';
+              return numericDistance;
             }
-            return value + ' กม.';
+            return value;
           },
           maxRotation: 0,
         },
@@ -120,7 +133,7 @@ const data = {
       y: {
         title: {
           display: true,
-          text: 'Speed (km/h)',
+          text: 'ความเร็ว (km/h)',
           color: 'rgb(0, 0, 0)'
         },
         min: 0, // ให้ความเร็วเริ่มจาก 0
@@ -135,10 +148,15 @@ const data = {
   };
 
   return (
-    // แนะนำให้ Wrap ด้วย div เพื่อคุมขนาด style={{ width: '50vw', margin: '0 auto' }}
-
-    <div style={{position: 'relative', width: '50vw', height: '45vh'}}>
-      <Line data={data} options={options} />
+<div style={{position: 'relative', width: '50vw', height: '45vh'}}>
+      {/* ถ้ายังไม่ได้เลือกเวลา ให้แสดงข้อความเตือนให้ผู้ใช้เลือกก่อน */}
+      {!selectedTime ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%'}}>
+          กรุณาเลือกช่วงเวลาเพื่อดูกราฟ
+        </div>
+      ) : (
+        <Line data={data} options={options} />
+      )}
     </div>
   );
 };

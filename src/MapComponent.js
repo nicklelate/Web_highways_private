@@ -76,7 +76,7 @@ const redLineOptions = {
 function MapComponent({showRedLine}) {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: "KEYS" // <-- ใส่ API Key ของคุณตรงนี้
+    googleMapsApiKey: "API Key" // <-- ใส่ API Key ของคุณตรงนี้
   });
 
   const [map, setMap] = React.useState(null);
