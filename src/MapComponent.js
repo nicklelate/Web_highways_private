@@ -1,113 +1,162 @@
-import React from 'react';
-import { GoogleMap, useJsApiLoader, Marker, Polyline } from '@react-google-maps/api';
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { GoogleMap, Polyline, useJsApiLoader } from "@react-google-maps/api";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "./firebase";
 
-// กำหนดขนาดของแผนที่ (ต้องกำหนด ไม่งั้นแผนที่อาจไม่ขึ้น)
+// ขนาดแผนที่
 const containerStyle = {
-  position: 'relative',
-  width: '50vw',
-  height: '75vh',
-  // top: '45vh',
-  // left: '0vW',
+  position: "relative",
+  width: "50vw",
+  height: "75vh",
 };
 
-const center = {
-  lat: 18.78861768937617,
-  lng: 98.98640969975193
+// center สำรอง กรณียังไม่มี route
+const fallbackCenter = {
+  lat: 13.664486272607089,
+  lng: 101.05589011962554,
 };
 
-const route121 = [
-  { lat: 18.724474595906003, lng: 98.92715670549427 },
-  { lat: 18.728325418716523, lng: 98.92634294061028 },
-  { lat: 18.73416951500932 , lng: 98.92670381417173 },
-  { lat: 18.735126423797954 , lng: 98.93016820036162 },
-  { lat: 18.738912900447563 , lng: 98.93287115559653 },
-  { lat: 18.74439927897996 , lng: 98.94149713949744 },
-  { lat: 18.751450029569156 , lng: 98.94091778241945 },
-  { lat: 18.752852016946896 , lng: 98.94166880093832 },
-  { lat: 18.75652963852025 , lng: 98.9409606978205 },
-  { lat: 18.756956318703693 , lng: 98.94321375320666 },
-  { lat: 18.759536695022344 , lng: 98.94325666857755 },
-  { lat: 18.762889093386608 , lng: 98.94467287487353 },
-  { lat: 18.76853722603026 , lng: 98.95001583505906 },
-  { lat: 18.777151279778813 , lng: 98.95347052017443 },
-  { lat: 18.77891680520359 , lng: 98.95805432753019 },
-  { lat: 18.784666360777486 , lng: 98.95851166863129 },
-  { lat: 18.79495753853093 , lng: 98.96208413478158 },
-  { lat: 18.80375044098128 , lng: 98.95927719705237 },
-  { lat: 18.80638339108612 , lng: 98.96085928916297 },
-  { lat: 18.8070114281257 , lng: 98.96239034601767 },
-  { lat: 18.812760273702683 , lng: 98.96351312113505 },
-  { lat: 18.818122465183745 , lng: 98.96310483931765 },
-  { lat: 18.82181793002678 , lng: 98.96512073098219 },
-  { lat: 18.825972211711843 , lng: 98.96573315372406 },
-  { lat: 18.828242531666223 , lng: 98.96427864967625 },
-  { lat: 18.832010228906384 , lng: 98.96333449787969 },
-  { lat: 18.84167060487304 , lng: 98.9653248718898 },
-  { lat: 18.845341402110822 , lng: 98.95996617272327 },
-  { lat: 18.847080172724162 , lng: 98.95973651419504 }, 
-  { lat: 18.85636753066692 , lng: 98.9627329448002 },
-  { lat: 18.865605017413497 , lng: 98.95907007800523 },
-  { lat: 18.867005109598924 , lng: 98.96089248949055 },
-  { lat: 18.866168470583162 , lng: 98.98409666068231 },
-  { lat: 18.839105015104654 , lng: 99.02648475686907 },
-  { lat: 18.828828769306607 , lng: 99.04618289901556 },
-  { lat: 18.792836647350693 , lng: 99.06785514783463 },
-  { lat: 18.779550928343383 , lng: 99.0698721692766 },
-  { lat: 18.760168964295346 , lng: 99.06412151347163 },
-  { lat: 18.73964684788423 , lng: 99.04493835538494 },
-  { lat: 18.721520290779758 , lng: 99.00558498590023 },
-  { lat: 18.719691270029873 , lng: 98.96751907468398 },
-  { lat: 18.724474595906003, lng: 98.92715670549427 },
-];
-
-// กำหนดสไตล์ของเส้น
+// style ของเส้น
 const redLineOptions = {
-  strokeColor: '#FF0000', // สีแดง
-  strokeOpacity: 0.8,     // ความโปร่งแสง
-  strokeWeight: 5,        // ความหนาของเส้น
+  strokeColor: "#FF0000",
+  strokeOpacity: 0.8,
+  strokeWeight: 5,
   clickable: false,
   draggable: false,
   editable: false,
   visible: true,
-  radius: 30000,
-  zIndex: 1
+  zIndex: 1,
 };
 
-function MapComponent({showRedLine}) {
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: "API Key" // <-- ใส่ API Key ของคุณตรงนี้
+// ดึง route จาก Firestore แล้วแปลงเป็น [{ lat, lng }, ...]
+async function getRouteById(routeId) {
+  const docRef = doc(db, "route", String(routeId));
+  const docSnap = await getDoc(docRef);
+
+  if (!docSnap.exists()) {
+    throw new Error(`Document route/${routeId} not found`);
+  }
+
+  const data = docSnap.data();
+  const x = Array.isArray(data.x) ? data.x : [];
+  const y = Array.isArray(data.y) ? data.y : [];
+
+  if (x.length !== y.length) {
+    throw new Error(`Invalid route/${routeId}: x and y length do not match`);
+  }
+
+  return x.map((lng, index) => ({
+    lat: Number(y[index]),
+    lng: Number(lng),
+  }));
+}
+
+function MapComponent({ routeId }) {
+  const [map, setMap] = useState(null);
+  const [routeShow, setRouteShow] = useState([]);
+  const [loadingRoute, setLoadingRoute] = useState(false);
+  const [error, setError] = useState("");
+
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: "",
   });
 
-  const [map, setMap] = React.useState(null);
-
-  const onLoad = React.useCallback(function callback(map) {
-    // // ฟังก์ชันนี้จะทำงานเมื่อแผนที่โหลดเสร็จ
-    // const bounds = new window.google.maps.LatLngBounds(center);
-    // map.fitBounds(bounds);
-    setMap(map);
+  const onLoad = useCallback((mapInstance) => {
+    setMap(mapInstance);
   }, []);
 
-  const onUnmount = React.useCallback(function callback(map) {
+  const onUnmount = useCallback(() => {
     setMap(null);
   }, []);
 
-  return isLoaded ? (
-<GoogleMap
-      mapContainerStyle={containerStyle}
-      center={center}
-      zoom={12} // *แนะนำให้ปรับ Zoom เป็น 11 หรือ 12 เพื่อให้เห็นภาพรวม*
-      onLoad={onLoad}
-      onUnmount={onUnmount}
-    >
-      {showRedLine && (
-        <>
-          <Polyline path={route121} options={redLineOptions} />
-        </>
-      )}
-      
-    </GoogleMap>
-  ) : <></>;
+  // center:
+  // - ถ้ามี route ใช้ fallbackCenter ไปก่อน
+  // - หลังจาก route โหลดแล้ว fitBounds จะจัดมุมมองให้เอง
+  const center = useMemo(() => {
+    return fallbackCenter;
+  }, []);
+
+  // โหลด route เมื่อ routeId เปลี่ยน
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRoute() {
+      if (!routeId) {
+        setRouteShow([]);
+        setError("");
+        setLoadingRoute(false);
+
+        if (map) {
+          map.panTo(fallbackCenter);
+          map.setZoom(5);
+        }
+        return;
+      }
+
+      try {
+        setLoadingRoute(true);
+        setError("");
+
+        const route = await getRouteById(routeId);
+
+        if (!cancelled) {
+          setRouteShow(route);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setRouteShow([]);
+          setError(err.message || "Failed to load route");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingRoute(false);
+        }
+      }
+    }
+
+    loadRoute();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [routeId, map]);
+
+  // fit bounds เฉพาะตอนมี route แล้ว
+  useEffect(() => {
+    if (!map || !window.google || routeShow.length === 0) return;
+
+    const bounds = new window.google.maps.LatLngBounds();
+    routeShow.forEach((point) => bounds.extend(point));
+    map.fitBounds(bounds);
+  }, [map, routeShow]);
+
+  if (loadError) {
+    return <div>Failed to load Google Maps</div>;
+  }
+
+  if (!isLoaded) {
+    return <div>Loading map...</div>;
+  }
+
+  return (
+    <div>
+      {loadingRoute && <div>Loading route...</div>}
+      {error && <div style={{ color: "red" }}>Error: {error}</div>}
+
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={center}
+        zoom={5}
+        onLoad={onLoad}
+        onUnmount={onUnmount}
+      >
+        {routeShow.length > 1 && (
+          <Polyline path={routeShow} options={redLineOptions} />
+        )}
+      </GoogleMap>
+    </div>
+  );
 }
 
 export default MapComponent;

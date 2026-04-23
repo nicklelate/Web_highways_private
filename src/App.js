@@ -5,22 +5,21 @@ import LineChart from './LineChart';
 import SriHeatmap from './SriHeatmap';
 
 function App() {
-// State สำหรับเก็บข้อความใน Input
   const [inputText, setInputText] = useState('');
-
-// State สำหรับส่งไปบอก Map ว่าให้โชว์เส้นหรือไม่
+  const [searchedRouteId, setSearchedRouteId] = useState('');
   const [showRedLine, setShowRedLine] = useState(false);
-
-// เพิ่ม State สำหรับเก็บค่าช่วงเวลาที่เลือกจาก Dropdown
   const [selectedTime, setSelectedTime] = useState('');
 
-// ฟังก์ชันตรวจสอบเงื่อนไข
   const handleSearch = () => {
-    if (inputText === '121') {
+    const route = inputText.trim();
+
+    if (route === '121') {
+      setSearchedRouteId(route);   // ส่ง route id ไปให้ MapComponent
       setShowRedLine(true);
     } else {
+      setSearchedRouteId('');      // ล้าง route
       setShowRedLine(false);
-      alert('ไม่พบเส้นทาง (ลองพิมพ์ 121)'); // เพิ่มลูกเล่นแจ้งเตือนนิดหน่อย
+      alert('ไม่พบเส้นทาง (ลองพิมพ์ 121)');
     }
   };
 
@@ -35,27 +34,34 @@ function App() {
       <div className="App-header_app">
         DEPARTMENT OF HIGHWAYS
       </div>
-      {/* <SriHeatmap /> */}
 
       {showRedLine && (
-        <>
-          <div className="App-right_top"><LineChart selectedTime={selectedTime} /></div>
-          <div className="App-right_bottom"><SriHeatmap /></div>
-        </>
-            )}
+        <div className="App-right_panel">
+          <div className="sync-scroll-content">
+            <div className="chart-top">
+              <LineChart routeId={searchedRouteId} selectedTime={selectedTime} />
+            </div>
+
+            <div className="chart-bottom">
+              <SriHeatmap routeId={searchedRouteId} />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="App-container">
         Search Routes
         <div className="search-box-wrapper">
-          <input 
-            type="text" 
+          <input
+            type="text"
             className="search-input"
-            placeholder="พิมพ์รหัสเส้นทาง (121)" 
+            placeholder="พิมพ์รหัสเส้นทาง (121)"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyDown}
           />
-          <button 
+
+          <button
             className="search-button"
             onClick={handleSearch}
           >
@@ -63,8 +69,8 @@ function App() {
           </button>
 
           {showRedLine && (
-            <select 
-              className="time-dropdown" 
+            <select
+              className="time-dropdown"
               value={selectedTime}
               onChange={(e) => setSelectedTime(e.target.value)}
             >
@@ -93,15 +99,13 @@ function App() {
               <option value="21:00 - 22:00">21:00 - 22:00</option>
               <option value="22:00 - 23:00">22:00 - 23:00</option>
               <option value="23:00 - 24:00">23:00 - 24:00</option>
-              {/* สามารถเพิ่ม <option> ช่วงเวลาอื่นๆ ต่อได้เลยครับ */}
             </select>
           )}
-
         </div>
       </div>
-      <MapComponent showRedLine={showRedLine} />
+
+      <MapComponent routeId={searchedRouteId} />
     </div>
-    
   );
 }
 
