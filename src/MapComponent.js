@@ -59,7 +59,7 @@ function MapComponent({ routeId }) {
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "",
+    googleMapsApiKey: "API KEY ใส่ตรงนี้จ้าาาาาาาาา",
   });
 
   const onLoad = useCallback((mapInstance) => {

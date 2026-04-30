@@ -9,23 +9,38 @@ function App() {
   const [searchedRouteId, setSearchedRouteId] = useState('');
   const [showRedLine, setShowRedLine] = useState(false);
   const [selectedTime, setSelectedTime] = useState('');
+  const [inputSta, setInputSta] = useState('');
+  const [searchedSta, setSearchedSta] = useState('');
 
   const handleSearch = () => {
     const route = inputText.trim();
 
-    if (route === '121') {
-      setSearchedRouteId(route);   // ส่ง route id ไปให้ MapComponent
-      setShowRedLine(true);
+    if (route !== '') {
+      // ถ้ามีการพิมพ์อะไรมา ก็รับค่านั้นไปเลย
+      setSearchedRouteId(route);   // ส่ง route id ที่พิมพ์ไปให้ MapComponent
+      setShowRedLine(true);        // แสดงกราฟและเครื่องมืออื่นๆ
     } else {
-      setSearchedRouteId('');      // ล้าง route
+      // ถ้ากด Search โดยที่ช่องว่างเปล่า
+      setSearchedRouteId('');      
       setShowRedLine(false);
-      alert('ไม่พบเส้นทาง (ลองพิมพ์ 121)');
+      alert('กรุณาพิมพ์รหัสเส้นทางที่ต้องการค้นหา');
     }
+  };
+
+  const handleSearchSta = () => {
+    // console.log("ค้นหาข้อมูล STA:", inputSta);
+    setSearchedSta(inputSta.trim());
   };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       handleSearch();
+    }
+  };
+
+const handleKeyDownSta = (e) => {
+    if (e.key === 'Enter') {
+      handleSearchSta();
     }
   };
 
@@ -39,11 +54,11 @@ function App() {
         <div className="App-right_panel">
           <div className="sync-scroll-content">
             <div className="chart-top">
-              <LineChart routeId={searchedRouteId} selectedTime={selectedTime} />
+              <LineChart routeId={searchedRouteId} selectedTime={selectedTime} searchedSta={searchedSta} />
             </div>
 
             <div className="chart-bottom">
-              <SriHeatmap routeId={searchedRouteId} />
+              <SriHeatmap routeId={searchedRouteId} searchedSta={searchedSta} />
             </div>
           </div>
         </div>
@@ -69,37 +84,57 @@ function App() {
           </button>
 
           {showRedLine && (
-            <select
-              className="time-dropdown"
-              value={selectedTime}
-              onChange={(e) => setSelectedTime(e.target.value)}
-            >
-              <option value="" disabled>เลือกช่วงเวลา</option>
-              <option value="0:00 - 1:00">0:00 - 1:00</option>
-              <option value="1:00 - 2:00">1:00 - 2:00</option>
-              <option value="2:00 - 3:00">2:00 - 3:00</option>
-              <option value="3:00 - 4:00">3:00 - 4:00</option>
-              <option value="4:00 - 5:00">4:00 - 5:00</option>
-              <option value="5:00 - 6:00">5:00 - 6:00</option>
-              <option value="6:00 - 7:00">6:00 - 7:00</option>
-              <option value="7:00 - 8:00">7:00 - 8:00</option>
-              <option value="8:00 - 9:00">8:00 - 9:00</option>
-              <option value="9:00 - 10:00">9:00 - 10:00</option>
-              <option value="10:00 - 11:00">10:00 - 11:00</option>
-              <option value="11:00 - 12:00">11:00 - 12:00</option>
-              <option value="12:00 - 13:00">12:00 - 13:00</option>
-              <option value="13:00 - 14:00">13:00 - 14:00</option>
-              <option value="14:00 - 15:00">14:00 - 15:00</option>
-              <option value="15:00 - 16:00">15:00 - 16:00</option>
-              <option value="16:00 - 17:00">16:00 - 17:00</option>
-              <option value="17:00 - 18:00">17:00 - 18:00</option>
-              <option value="18:00 - 19:00">18:00 - 19:00</option>
-              <option value="19:00 - 20:00">19:00 - 20:00</option>
-              <option value="20:00 - 21:00">20:00 - 21:00</option>
-              <option value="21:00 - 22:00">21:00 - 22:00</option>
-              <option value="22:00 - 23:00">22:00 - 23:00</option>
-              <option value="23:00 - 24:00">23:00 - 24:00</option>
-            </select>
+            <>
+              <div className="search-box-wrapper_sta">
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Sta. ทุก 100 ม. (เช่น 1,1+100)"
+                  value={inputSta}
+                  onChange={(e) => setInputSta(e.target.value)}
+                  onKeyDown={handleKeyDownSta}
+                />
+                
+                <button
+                  className="search-button"
+                  onClick={handleSearchSta}
+                >
+                  Search
+                </button>
+              </div>
+
+              <select
+                className="time-dropdown"
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+              >
+                <option value="" disabled>เลือกช่วงเวลา</option>
+                <option value="0:00 - 1:00">0:00 - 1:00</option>
+                <option value="1:00 - 2:00">1:00 - 2:00</option>
+                <option value="2:00 - 3:00">2:00 - 3:00</option>
+                <option value="3:00 - 4:00">3:00 - 4:00</option>
+                <option value="4:00 - 5:00">4:00 - 5:00</option>
+                <option value="5:00 - 6:00">5:00 - 6:00</option>
+                <option value="6:00 - 7:00">6:00 - 7:00</option>
+                <option value="7:00 - 8:00">7:00 - 8:00</option>
+                <option value="8:00 - 9:00">8:00 - 9:00</option>
+                <option value="9:00 - 10:00">9:00 - 10:00</option>
+                <option value="10:00 - 11:00">10:00 - 11:00</option>
+                <option value="11:00 - 12:00">11:00 - 12:00</option>
+                <option value="12:00 - 13:00">12:00 - 13:00</option>
+                <option value="13:00 - 14:00">13:00 - 14:00</option>
+                <option value="14:00 - 15:00">14:00 - 15:00</option>
+                <option value="15:00 - 16:00">15:00 - 16:00</option>
+                <option value="16:00 - 17:00">16:00 - 17:00</option>
+                <option value="17:00 - 18:00">17:00 - 18:00</option>
+                <option value="18:00 - 19:00">18:00 - 19:00</option>
+                <option value="19:00 - 20:00">19:00 - 20:00</option>
+                <option value="20:00 - 21:00">20:00 - 21:00</option>
+                <option value="21:00 - 22:00">21:00 - 22:00</option>
+                <option value="22:00 - 23:00">22:00 - 23:00</option>
+                <option value="23:00 - 24:00">23:00 - 24:00</option>
+              </select>
+            </>
           )}
         </div>
       </div>

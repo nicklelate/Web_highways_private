@@ -10,7 +10,7 @@ const makeTimeDocId = (displayKey) => {
     .replace(/\s/g, '');
 };
 
-const LineChart = React.memo(({ routeId, selectedTime }) => {
+const LineChart = React.memo(({ routeId, selectedTime, searchedSta }) => {
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
 
@@ -210,6 +210,53 @@ const LineChart = React.memo(({ routeId, selectedTime }) => {
 
         chart.hideLoading();
         chart.clear();
+
+        const parseStaToKm = (staStr) => {
+          if (!staStr) return null;
+          let kmValue = null;
+
+          if (staStr.includes('+')) {
+            const [kmPart, mPart] = staStr.split('+');
+            const km = parseInt(kmPart, 10);
+            const m = parseInt(mPart, 10);
+            if (!isNaN(km) && !isNaN(m)) {
+              kmValue = km + (m / 1000);
+            }
+          } else {
+            const val = parseFloat(staStr);
+            if (!isNaN(val)) kmValue = val;
+          }
+
+          if (kmValue === null) return null;
+
+          const scaled = kmValue * 10;
+          if (Math.abs(Math.round(scaled) - scaled) > 1e-5) {
+            return null; 
+          }
+          return Number(kmValue.toFixed(1));
+        };
+
+        const targetKm = parseStaToKm(searchedSta);
+        let validTargetCategory = null;
+
+        if (targetKm !== null && targetKm >= 0 && targetKm <= xMaxAligned) {
+          validTargetCategory = targetKm.toFixed(1); 
+        }
+
+        const staMarkLine = validTargetCategory ? {
+          symbol: ['none', 'none'],
+          silent: true,            
+          label: { show: false },  
+          lineStyle: {
+            color: '#000000',      
+            type: 'dashed',
+            width: 2
+          },
+          data: [
+            { xAxis: validTargetCategory } 
+          ]
+        } : undefined;
+
         const SHARED_GRID_LEFT = 90;
         const SHARED_GRID_RIGHT = 10;
         chart.setOption(
@@ -332,6 +379,7 @@ const LineChart = React.memo(({ routeId, selectedTime }) => {
                   color: 'rgb(0, 0, 255)',
                 },
                 smooth: false,
+                markLine: staMarkLine,
               },
               {
                 name: 'Speed: 15 Percentile',
@@ -382,7 +430,7 @@ const LineChart = React.memo(({ routeId, selectedTime }) => {
       cancelled = true;
       chart.hideLoading();
     };
-  }, [routeId, selectedTime]);
+  }, [routeId, selectedTime, searchedSta]);
 
   return (
     <div style={{ flexShrink: 0 }}>

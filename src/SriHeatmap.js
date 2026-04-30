@@ -3,7 +3,7 @@ import * as echarts from 'echarts';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
-const SriHeatmap = React.memo(({ routeId }) => {
+const SriHeatmap = React.memo(({ routeId, searchedSta }) => {
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
 
@@ -179,6 +179,53 @@ const SriHeatmap = React.memo(({ routeId }) => {
 
         chart.hideLoading();
         chart.clear();
+
+        const parseStaToKm = (staStr) => {
+          if (!staStr) return null;
+          let kmValue = null;
+
+          if (staStr.includes('+')) {
+            const [kmPart, mPart] = staStr.split('+');
+            const km = parseInt(kmPart, 10);
+            const m = parseInt(mPart, 10);
+            if (!isNaN(km) && !isNaN(m)) {
+              kmValue = km + (m / 1000);
+            }
+          } else {
+            const val = parseFloat(staStr);
+            if (!isNaN(val)) kmValue = val;
+          }
+
+          if (kmValue === null) return null;
+
+          const scaled = kmValue * 10;
+          if (Math.abs(Math.round(scaled) - scaled) > 1e-5) {
+            return null; 
+          }
+          return Number(kmValue.toFixed(1));
+        };
+
+        const targetKm = parseStaToKm(searchedSta);
+        let validTargetCategory = null;
+
+        if (targetKm !== null && targetKm >= 0 && targetKm <= xMaxAligned) {
+          validTargetCategory = targetKm.toFixed(1); 
+        }
+
+        const staMarkLine = validTargetCategory ? {
+          symbol: ['none', 'none'],
+          silent: true,            
+          label: { show: false },  
+          lineStyle: {
+            color: '#000000',      
+            type: 'dashed',
+            width: 2
+          },
+          data: [
+            { xAxis: validTargetCategory } 
+          ]
+        } : undefined;
+
         const SHARED_GRID_LEFT = 70;
         const SHARED_GRID_RIGHT = 10;
         chart.setOption(
@@ -279,7 +326,7 @@ const SriHeatmap = React.memo(({ routeId }) => {
                 { min: 8.01, max: 10.0, label: '> 8.00', color: '#d73027' },
                 { min: 6.01, max: 8.0, label: '6.01 - 8.00', color: '#f46d43' },
                 { min: 4.01, max: 6.0, label: '4.01 - 6.00', color: '#fdae61' },
-                { min: 2.01, max: 4.0, label: '2.01 - 4.00', color: '#d9ef8b' },
+                { min: 2.01, max: 4.0, label: '2.01 - 4.00', color: '#68c230' },
                 { min: 0, max: 2.0, label: '0 - 2.00', color: '#1a9850' },
               ],
             },
@@ -292,6 +339,7 @@ const SriHeatmap = React.memo(({ routeId }) => {
                 itemStyle: { borderWidth: 0 },
                 large: true,
                 progressive: 2000,
+                markLine: staMarkLine,
               },
             ],
           },
@@ -310,7 +358,7 @@ const SriHeatmap = React.memo(({ routeId }) => {
       cancelled = true;
       chart.hideLoading();
     };
-  }, [routeId]);
+  }, [routeId, searchedSta]);
 
   return (
     <div style={{ flexShrink: 0 }}>

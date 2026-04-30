@@ -16,13 +16,13 @@
 }
 
 .App-container {
-  position: 'relative';
+  position: relative;
   height: 15vh;
   width: 50vw;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   background-color: #ffffff;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 3.2vh;
@@ -94,17 +94,25 @@
 /* กล่องสีขาวที่ใส่ช่องค้นหา */
 .search-box-wrapper {
   background-color: rgb(255, 255, 255);
-  padding: 2vh;
+  /* padding: 2vh; */
+  display: flex;
+  gap: 0.8vw;
+  transform: translateX(1vw);
+}
+
+.search-box-wrapper_sta {
+  background-color: rgb(255, 255, 255);
+  /* padding: 2vh; */
   display: flex;
   gap: 0.8vw;
 }
 
 .time-dropdown {
-  position: absolute;
+  /* position: absolute;
   left: 37vw;
-  top: 17vh;
+  top: 7vh; */
   height: 5vh;
-  width: 12vw;
+  width: 9vw;
   background-color: #ffffff;
   z-index: 1;
   padding: 8px 12px;
@@ -117,11 +125,11 @@
 /* ช่องกรอกข้อความ Input */
 .search-input {
   padding: 0.2vw;
-  font-size: 2.1vh;
+  font-size: 2vh;
   border-radius: 0.3vw;
   border: 1px solid #ddd;
   outline: none;
-  width: 12vw; /* กำหนดความกว้างสักหน่อย */
+  width: 12.5vw; /* กำหนดความกว้างสักหน่อย */
 }
 
 .search-input:focus {
