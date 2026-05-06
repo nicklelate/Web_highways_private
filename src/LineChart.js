@@ -262,12 +262,26 @@ const LineChart = React.memo(({ routeId, selectedTime, searchedSta }) => {
         chart.setOption(
           {
             animation: false,
+            // 🌟🌟 สำหรับ save รูปภาพ 🌟🌟
+            toolbox: {
+              itemSize: 20,
+              feature: {
+                saveAsImage: {
+                  title: 'บันทึกรูปภาพ',    // ข้อความตอนเอาเมาส์ชี้
+                  name: `Speed_${routeId}_${selectedTime}`, // ชื่อไฟล์ตอนดาวน์โหลด (เอา routeId มาต่อท้ายได้)
+                  pixelRatio: 3           // เพิ่มความคมชัดของรูป (2 หรือ 3 ก็ได้)
+                }
+              },
+              right: 0, // ขยับไอคอนให้ห่างจากขอบขวานิดนึง จะได้ไม่เบียดเกินไป
+              top: '-3%',
+            },
+            // 🌟🌟 สำหรับ save รูปภาพ 🌟🌟
             grid: {
               top: 36,
               left: SHARED_GRID_LEFT,
               right: SHARED_GRID_RIGHT,
               bottom: 28,
-              height: '48%',
+              // height: '48%',
             },
             legend: {
               top: 0,
@@ -315,7 +329,7 @@ const LineChart = React.memo(({ routeId, selectedTime, searchedSta }) => {
               {
                 type: 'text',
                 left: SHARED_GRID_LEFT-85,   // ผูกกับจุดเริ่มของ plot area
-                top: '305vh',
+                bottom: 8,
                 style: {
                   text: 'ระยะทาง (km)',
                   fill: '#000000',
@@ -434,7 +448,7 @@ const LineChart = React.memo(({ routeId, selectedTime, searchedSta }) => {
 
   return (
     <div style={{ flexShrink: 0 }}>
-      <div ref={chartRef} style={{ width: '150vw', height: '75vh' }} />
+      <div ref={chartRef} style={{ width: '150vw', height: '45vh' }} />
     </div>
   );
 });

@@ -231,6 +231,20 @@ const SriHeatmap = React.memo(({ routeId, searchedSta }) => {
         chart.setOption(
           {
             animation: false,
+            // 🌟🌟 สำหรับ save รูปภาพ 🌟🌟
+            toolbox: {
+              itemSize: 20,
+              feature: {
+                saveAsImage: {
+                  title: 'บันทึกรูปภาพ',    // ข้อความตอนเอาเมาส์ชี้
+                  name: `SriHeatmap_${routeId}`, // ชื่อไฟล์ตอนดาวน์โหลด (เอา routeId มาต่อท้ายได้)
+                  pixelRatio: 3           // เพิ่มความคมชัดของรูป (2 หรือ 3 ก็ได้)
+                }
+              },
+              right: 0, // ขยับไอคอนให้ห่างจากขอบขวานิดนึง จะได้ไม่เบียดเกินไป
+              bottom: 0,
+            },
+            // 🌟🌟 สำหรับ save รูปภาพ 🌟🌟
             tooltip: {
               position: 'top',
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -254,15 +268,15 @@ const SriHeatmap = React.memo(({ routeId, searchedSta }) => {
               },
             },
             grid: {
-              height: '50%',
-              top: '0%',
+              top: 10,
+              bottom: 60,
               left: SHARED_GRID_LEFT,
               right: SHARED_GRID_RIGHT,
             },
             title: {
               text: 'ระยะทาง (km)',
               left: '0%',
-              bottom: '46%',
+              bottom: 36,
               textStyle: {
                 fontSize: 12,
                 fontFamily: 'Plus Jakarta Sans, sans-serif',
@@ -309,7 +323,7 @@ const SriHeatmap = React.memo(({ routeId, searchedSta }) => {
               show: true,
               orient: 'horizontal',
               left: '0%',
-              bottom: '40%',
+              bottom: 0,
               dimension: 2,
               itemWidth: 30,
               itemHeight: 15,
@@ -362,7 +376,7 @@ const SriHeatmap = React.memo(({ routeId, searchedSta }) => {
 
   return (
     <div style={{ flexShrink: 0 }}>
-      <div ref={chartRef} style={{ width: '150vw', height: '75vh' }} />
+      <div ref={chartRef} style={{ width: '150vw', height: '45vh' }} />
     </div>
   );
 });
