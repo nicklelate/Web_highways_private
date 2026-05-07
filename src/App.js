@@ -27,9 +27,54 @@ function App() {
     }
   };
 
+  const formatStaInput = (rawInput) => {
+    if (!rawInput) return '';
+    // 1. ลบช่องว่างทั้งหมดออก
+    let text = rawInput.replace(/\s/g, '');
+    // 2. ถ้าไม่มีเครื่องหมาย + (เช่น 1, 2, 7.5) ให้ตัดทศนิยมทิ้งแล้วส่งคืนเลย
+    if (!text.includes('+')) {
+      const val = parseInt(text, 10); 
+      return isNaN(val) ? '' : String(val);
+    }
+    // 3. ถ้ามีเครื่องหมาย + ให้แยกส่วนกิโลเมตร (km) และเมตร (m)
+    let [kmPart, mPart] = text.split('+');
+    let km = parseInt(kmPart, 10);
+    if (isNaN(km)) km = 0;
+    // ตัดทศนิยมส่วนของเมตรออกก่อน (เช่น .56 ใน 8+4.56)
+    mPart = (mPart || '').split('.')[0]; 
+    // 4. เติม 0 ต่อท้ายให้ครบ 3 หลัก (เช่น '1' -> '100', '57' -> '570', '0' -> '000')
+    while (mPart.length < 3) {
+      mPart += '0';
+    }
+    // กันเหนียว: ถ้าพิมพ์มาเกิน 3 หลัก ให้ตัดเอาแค่ 3 หลักแรก
+    if (mPart.length > 3) {
+      mPart = mPart.substring(0, 3);
+    }
+    let m = parseInt(mPart, 10);
+    if (isNaN(m)) m = 0;
+    // 5. ปัดเศษทุกๆ 100 เมตร (<= 50 ปัดลง, > 50 ปัดขึ้น)
+    const remainder = m % 100;
+    if (remainder <= 50) {
+      m = m - remainder; // ปัดลง
+    } else {
+      m = m + (100 - remainder); // ปัดขึ้น
+    }
+    // 6. ถ้าปัดขึ้นจนเมตรกลายเป็น 1000 ให้บวกเพิ่มที่กิโลเมตรแทน (เช่น 1+960 -> 2+000)
+    if (m >= 1000) {
+      km += Math.floor(m / 1000);
+      m = m % 1000;
+    }
+
+    return `${km}+${String(m).padStart(3, '0')}`;
+  };
+
   const handleSearchSta = () => {
-    // console.log("ค้นหาข้อมูล STA:", inputSta);
-    setSearchedSta(inputSta.trim());
+    // นำค่าที่ผู้ใช้พิมพ์ไปจัดรูปแบบก่อน
+    const formattedSta = formatStaInput(inputSta);
+    // ส่งค่าที่จัดรูปแบบแล้วไปให้กราฟ
+    setSearchedSta(formattedSta);
+    // 🌟 แถม: อัปเดตค่าในช่องกรอก ให้ผู้ใช้เห็นว่าระบบปัดเศษให้เป็นเลขอะไร
+    setInputSta(formattedSta); 
   };
 
   const handleKeyDown = (e) => {
