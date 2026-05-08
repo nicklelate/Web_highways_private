@@ -80,9 +80,13 @@ const SriHeatmap = React.memo(({ routeId, searchedSta }) => {
         const timeData = Array.isArray(firestoreData.Time)
           ? firestoreData.Time
           : [];
-        const sriRaw = Array.isArray(firestoreData.sri)
-          ? firestoreData.sri
-          : [];
+        let sriRaw = [];
+        if (typeof firestoreData.sri === 'string') {
+          // คลายซิป JSON String ให้กลับเป็น Array
+          sriRaw = JSON.parse(firestoreData.sri);
+        } else if (Array.isArray(firestoreData.sri)) {
+          sriRaw = firestoreData.sri;
+        }
 
         if (
           distanceData.length === 0 ||
@@ -92,12 +96,24 @@ const SriHeatmap = React.memo(({ routeId, searchedSta }) => {
           throw new Error(`route/${routeId} ไม่มีข้อมูล heatmap`);
         }
 
-        // Firestore: [{ x, y, value }, ...] -> [[x, y, value], ...]
-        const heatmapData = sriRaw.map((item) => [
-          Number(item.x),
-          Number(item.y),
-          Number(item.value ?? 0),
-        ]);
+        // 🌟 แปลงโครงสร้างให้พร้อมวาดกราฟ (รองรับทั้งแบบเก่าและแบบใหม่)
+        const heatmapData = sriRaw.map((item) => {
+          if (Array.isArray(item)) {
+            // กรณีเป็นแบบใหม่ [x, y, value]
+            return [
+              Number(item[0]), 
+              Number(item[1]), 
+              Number(item[2] ?? 0)
+            ];
+          } else {
+            // กรณีเป็นแบบเก่า { x, y, value }
+            return [
+              Number(item.x),
+              Number(item.y),
+              Number(item.value ?? 0),
+            ];
+          }
+        });
 
         // =========================================================
         // ทำแกน X ให้เรียงสม่ำเสมอ และใช้ปลายขวาเดียวกับ LineChart
@@ -226,23 +242,28 @@ const SriHeatmap = React.memo(({ routeId, searchedSta }) => {
           ]
         } : undefined;
 
-        const SHARED_GRID_LEFT = 70;
+        const SHARED_GRID_LEFT = 110;
         const SHARED_GRID_RIGHT = 10;
         chart.setOption(
           {
             animation: false,
             // 🌟🌟 สำหรับ save รูปภาพ 🌟🌟
             toolbox: {
-              itemSize: 20,
+              itemSize: 25,
               feature: {
                 saveAsImage: {
                   title: 'บันทึกรูปภาพ',    // ข้อความตอนเอาเมาส์ชี้
                   name: `SriHeatmap_${routeId}`, // ชื่อไฟล์ตอนดาวน์โหลด (เอา routeId มาต่อท้ายได้)
-                  pixelRatio: 3           // เพิ่มความคมชัดของรูป (2 หรือ 3 ก็ได้)
+                  pixelRatio: 3,           // เพิ่มความคมชัดของรูป (2 หรือ 3 ก็ได้)
+                  icon: 'path://M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z',
+                  iconStyle: {
+                    borderColor: '#333333', // สีของเส้น (ใส่เป็นสีดำเทา หรือ #000000 ก็ได้)
+                    borderWidth: 2,       
+                  }
                 }
               },
-              right: 0, // ขยับไอคอนให้ห่างจากขอบขวานิดนึง จะได้ไม่เบียดเกินไป
-              bottom: 0,
+              left: 0, 
+              top: 0,
             },
             // 🌟🌟 สำหรับ save รูปภาพ 🌟🌟
             tooltip: {

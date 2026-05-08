@@ -257,22 +257,28 @@ const LineChart = React.memo(({ routeId, selectedTime, searchedSta }) => {
           ]
         } : undefined;
 
-        const SHARED_GRID_LEFT = 90;
+        const SHARED_GRID_LEFT = 110;
         const SHARED_GRID_RIGHT = 10;
         chart.setOption(
           {
             animation: false,
             // 🌟🌟 สำหรับ save รูปภาพ 🌟🌟
             toolbox: {
-              itemSize: 20,
+              itemSize: 25,
               feature: {
                 saveAsImage: {
                   title: 'บันทึกรูปภาพ',    // ข้อความตอนเอาเมาส์ชี้
                   name: `Speed_${routeId}_${selectedTime}`, // ชื่อไฟล์ตอนดาวน์โหลด (เอา routeId มาต่อท้ายได้)
-                  pixelRatio: 3           // เพิ่มความคมชัดของรูป (2 หรือ 3 ก็ได้)
+                  pixelRatio: 3,           // เพิ่มความคมชัดของรูป (2 หรือ 3 ก็ได้)
+                  icon: 'path://M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z',
+                  iconStyle: {
+                    borderColor: '#333333', // สีของเส้น (ใส่เป็นสีดำเทา หรือ #000000 ก็ได้)
+                    borderWidth: 2,       
+                  }
                 }
               },
-              right: 0, // ขยับไอคอนให้ห่างจากขอบขวานิดนึง จะได้ไม่เบียดเกินไป
+              // right: 0, // ขยับไอคอนให้ห่างจากขอบขวานิดนึง จะได้ไม่เบียดเกินไป
+              left: 0,
               top: '-3%',
             },
             // 🌟🌟 สำหรับ save รูปภาพ 🌟🌟
@@ -285,7 +291,7 @@ const LineChart = React.memo(({ routeId, selectedTime, searchedSta }) => {
             },
             legend: {
               top: 0,
-              left: 0,
+              left: 60,
               textStyle: {
                 fontFamily: 'Plus Jakarta Sans, sans-serif',
                 fontSize: 12,
